@@ -13,16 +13,15 @@ def _open_booking_form(driver):
     return home
 
 
-# TC-004 · TC-005 · TC-006 — Réservation : champs invalides / manquants
 class TestBookingNegativePath:
 
     def test_booking_without_firstname(self, driver):
         home = _open_booking_form(driver)
         home.fill_booking_form(
-            firstname="christina",
+            firstname="",
             lastname="lopes",
             email="test@epita.fr",
-            phone="06123456789",   # 11 chiffres requis par l'appli (BUG-001)
+            phone="06123456789",
         )
         home.submit_booking()
         assert home.is_booking_error_displayed(), (
@@ -36,7 +35,7 @@ class TestBookingNegativePath:
             firstname="Christina",
             lastname="Lopes",
             email="",
-            phone="06123456789",   # 11 chiffres requis par l'appli (BUG-001)
+            phone="06123456789",
         )
         home.submit_booking()
         assert home.is_booking_error_displayed(), (
@@ -50,7 +49,7 @@ class TestBookingNegativePath:
             firstname="Christina",
             lastname="Lopes",
             email="emailinvalide",
-            phone="06123456789",   # 11 chiffres requis par l'appli (BUG-001)
+            phone="06123456789",
         )
         home.submit_booking()
         assert home.is_booking_error_displayed(), (
@@ -59,13 +58,14 @@ class TestBookingNegativePath:
             "à tort. Résultat attendu : 'must be a well-formed email address'."
         )
 
+    @pytest.mark.xfail(reason="BUG-001 : l'appli rejette les numéros à 10 chiffres", strict=True)
     def test_booking_with_short_phone(self, driver):
         home = _open_booking_form(driver)
         home.fill_booking_form(
             firstname="Christina",
             lastname="Lopes",
             email="test@epita.fr",
-            phone="0612345678",    # 10 chiffres — format standard, rejeté à tort
+            phone="0612345678",
         )
         home.submit_booking()
         assert not home.is_booking_error_displayed(), (
@@ -74,8 +74,6 @@ class TestBookingNegativePath:
             "doit être acceptée avec un numéro standard à 10 chiffres."
         )
 
-
-# TC-012 · TC-014 — Formulaire de contact : champs obligatoires manquants
 
 class TestContactNegativePath:
 
@@ -113,8 +111,6 @@ class TestContactNegativePath:
             "l'email est vide."
         )
 
-
-# TC-016 — Authentification admin : identifiants incorrects
 
 class TestAdminLoginNegativePath:
 

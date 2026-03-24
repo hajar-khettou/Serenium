@@ -5,30 +5,17 @@ from pages.admin_page import AdminPage
 from config import INVALID_LOGIN, ADMIN_USERNAME, ADMIN_PASSWORD
 
 
-# ---------------------------------------------------------------------------
-# Helpers internes
-# ---------------------------------------------------------------------------
-
 def _open_booking_form(driver):
-    """Ouvre la page d'accueil, clique sur la première chambre et sélectionne
-    des dates par drag-and-drop afin de faire apparaître le formulaire de
-    réservation."""
+
     home = HomePage(driver)
     home.open_home()
     home.click_book_first_room()
     home.select_dates_by_drag()
     return home
 
-
-# ---------------------------------------------------------------------------
-# TC-004 · TC-005 · TC-006 — Réservation : champs invalides / manquants
-# ---------------------------------------------------------------------------
-
 class TestBookingNegativePath:
 
     def test_booking_without_firstname(self, driver):
-        """TC-004 — Une réservation soumise sans prénom doit afficher une
-        erreur et ne pas aboutir."""
         home = _open_booking_form(driver)
         home.fill_booking_form(
             firstname="",
@@ -43,8 +30,6 @@ class TestBookingNegativePath:
         )
 
     def test_booking_without_email(self, driver):
-        """TC-005 — Une réservation soumise sans email doit afficher une
-        erreur et ne pas aboutir."""
         home = _open_booking_form(driver)
         home.fill_booking_form(
             firstname="Marie",
@@ -59,12 +44,6 @@ class TestBookingNegativePath:
         )
 
     def test_booking_with_invalid_email(self, driver):
-        """TC-006 — Une réservation avec un email au format invalide doit
-        afficher une erreur.
-
-        RÉSULTAT CONNU : ce test est attendu en FAIL car l'application
-        accepte actuellement les emails invalides sans retourner d'erreur.
-        Ce comportement constitue un bug identifié (sévérité Major)."""
         home = _open_booking_form(driver)
         home.fill_booking_form(
             firstname="Marie",
@@ -79,16 +58,9 @@ class TestBookingNegativePath:
             "à tort."
         )
 
-
-# ---------------------------------------------------------------------------
-# TC-012 · TC-014 — Formulaire de contact : champs obligatoires manquants
-# ---------------------------------------------------------------------------
-
 class TestContactNegativePath:
 
     def test_contact_without_name(self, driver):
-        """TC-012 — Soumettre le formulaire de contact sans nom doit
-        afficher un message d'erreur."""
         home = HomePage(driver)
         home.open_home()
         home.scroll_to_contact()
@@ -106,8 +78,6 @@ class TestContactNegativePath:
         )
 
     def test_contact_without_email(self, driver):
-        """TC-014 — Soumettre le formulaire de contact sans email doit
-        afficher un message d'erreur."""
         home = HomePage(driver)
         home.open_home()
         home.scroll_to_contact()
@@ -124,16 +94,9 @@ class TestContactNegativePath:
             "l'email est vide."
         )
 
-
-# ---------------------------------------------------------------------------
-# TC-016 — Authentification admin : identifiants incorrects
-# ---------------------------------------------------------------------------
-
 class TestAdminLoginNegativePath:
 
     def test_login_with_wrong_password(self, driver):
-        """TC-016 — Une tentative de connexion admin avec un mauvais mot de
-        passe doit afficher une erreur et refuser l'accès."""
         login = LoginPage(driver)
         admin = AdminPage(driver)
         login.open_admin_login()

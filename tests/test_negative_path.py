@@ -6,57 +6,76 @@ from config import INVALID_LOGIN, ADMIN_USERNAME, ADMIN_PASSWORD
 
 
 def _open_booking_form(driver):
-
     home = HomePage(driver)
     home.open_home()
     home.click_book_first_room()
     home.select_dates_by_drag()
     return home
 
+
+# TC-004 · TC-005 · TC-006 — Réservation : champs invalides / manquants
 class TestBookingNegativePath:
 
     def test_booking_without_firstname(self, driver):
         home = _open_booking_form(driver)
         home.fill_booking_form(
-            firstname="",
-            lastname="Dupont",
+            firstname="christina",
+            lastname="lopes",
             email="test@epita.fr",
-            phone="0612345678",
+            phone="06123456789",   # 11 chiffres requis par l'appli (BUG-001)
         )
         home.submit_booking()
         assert home.is_booking_error_displayed(), (
             "TC-004 FAIL : aucun message d'erreur affiché alors que le "
-            "prénom est vide."
+            "prénom est vide. Résultat attendu : 'firstname should not be blank'."
         )
 
     def test_booking_without_email(self, driver):
         home = _open_booking_form(driver)
         home.fill_booking_form(
-            firstname="Marie",
-            lastname="Dupont",
+            firstname="Christina",
+            lastname="Lopes",
             email="",
-            phone="0612345678",
+            phone="06123456789",   # 11 chiffres requis par l'appli (BUG-001)
         )
         home.submit_booking()
         assert home.is_booking_error_displayed(), (
             "TC-005 FAIL : aucun message d'erreur affiché alors que "
-            "l'email est vide."
+            "l'email est vide. Résultat attendu : 'must not be empty'."
         )
 
     def test_booking_with_invalid_email(self, driver):
         home = _open_booking_form(driver)
         home.fill_booking_form(
-            firstname="Marie",
-            lastname="Dupont",
+            firstname="Christina",
+            lastname="Lopes",
             email="emailinvalide",
-            phone="0612345678",
+            phone="06123456789",   # 11 chiffres requis par l'appli (BUG-001)
         )
         home.submit_booking()
         assert home.is_booking_error_displayed(), (
             "TC-006 FAIL (bug connu) : l'application n'affiche pas "
             "d'erreur pour un email invalide — la réservation est acceptée "
-            "à tort."
+            "à tort. Résultat attendu : 'must be a well-formed email address'."
         )
+
+    def test_booking_with_short_phone(self, driver):
+        home = _open_booking_form(driver)
+        home.fill_booking_form(
+            firstname="Christina",
+            lastname="Lopes",
+            email="test@epita.fr",
+            phone="0612345678",    # 10 chiffres — format standard, rejeté à tort
+        )
+        home.submit_booking()
+        assert not home.is_booking_error_displayed(), (
+            "TC-BUG-001 FAIL (bug connu) : un numéro à 10 chiffres est "
+            "rejeté par l'application. Résultat attendu : la réservation "
+            "doit être acceptée avec un numéro standard à 10 chiffres."
+        )
+
+
+# TC-012 · TC-014 — Formulaire de contact : champs obligatoires manquants
 
 class TestContactNegativePath:
 
@@ -67,9 +86,9 @@ class TestContactNegativePath:
         home.fill_contact_form(
             name="",
             email="test@epita.fr",
-            phone="0612345678",
-            subject="Sujet valide",
-            description="Description suffisamment longue pour passer la validation.",
+            phone="06123456789",
+            subject="Sujet valide ici",
+            description="Description suffisamment longue pour passer la validation minimale.",
         )
         home.submit_contact()
         assert home.is_contact_error_displayed(), (
@@ -84,9 +103,9 @@ class TestContactNegativePath:
         home.fill_contact_form(
             name="Christina Lopes",
             email="",
-            phone="0612345678",
-            subject="Sujet valide",
-            description="Description suffisamment longue pour passer la validation.",
+            phone="06123456789",
+            subject="Sujet valide ici",
+            description="Description suffisamment longue pour passer la validation minimale.",
         )
         home.submit_contact()
         assert home.is_contact_error_displayed(), (
@@ -94,9 +113,12 @@ class TestContactNegativePath:
             "l'email est vide."
         )
 
+
+# TC-016 — Authentification admin : identifiants incorrects
+
 class TestAdminLoginNegativePath:
 
-    def test_login_with_wrong_password(self, driver):
+    def test_login_with_wrong_credentials(self, driver):
         login = LoginPage(driver)
         admin = AdminPage(driver)
         login.open_admin_login()
